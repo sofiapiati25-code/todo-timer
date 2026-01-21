@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Задачи + Таймеры</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --card:#171a21;
+      --text:#e8e8ea;
+      --muted:#a7a7b0;
+      --border:#2a2f3a;
+      --accent:#6aa9ff;
+      --danger:#ff6a6a;
+      --ok:#66e3a1;
+      --warn:#ffd36a;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    [data-theme="light"]{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#1b1c20;
+      --muted:#585b67;
+      --border:#dfe3ee;
+      --accent:#2e6bff;
+      --danger:#d32020;
+      --ok:#0d9d5a;
+      --warn:#b07b00;
+      --shadow: 0 10px 30px rgba(0,0,0,.10);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 22px 16px 60px;
+    }
+    header{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom: 16px;
+    }
+    h1{
+      font-size: 20px;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:14px;
+      transition: .15s transform, .15s opacity;
+      user-select:none;
+    }
+    .btn:hover{opacity:.9}
+    .btn:active{transform:scale(.98)}
+    .btn.accent{border-color: transparent; background: var(--accent); color:white;}
+    .btn.danger{border-color: transparent; background: var(--danger); color:white;}
+    .btn.ok{border-color: transparent; background: var(--ok); color:#062013;}
+    .btn.warn{border-color: transparent; background: var(--warn); color:#2a1c00;}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 860px){
+      .grid{grid-template-columns: 1.15fr .85fr;}
+    }
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    input[type="text"], input[type="number"], input[type="password"]{
+      border:1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 10px;
+      outline: none;
+      font-size:14px;
+      width: 100%;
+    }
+    input[type="number"]{max-width: 140px;}
+    .grow{flex:1 1 auto;}
+    .muted{color:var(--muted); font-size: 13px;}
+    .tasks{
+      margin-top: 10px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .task{
+      display:grid;
+      grid-template-columns: 32px 1fr auto;
+      gap: 10px;
+      align-items:center;
+      padding: 12px;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.02);
+    }
+    [data-theme="light"] .task{background: rgba(0,0,0,.02);}
+    .check{
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border:1px solid var(--border);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      user-select:none;
+      font-weight:700;
+    }
+    .task.done{
+      opacity:.65;
+      text-decoration: line-through;
+    }
+    .t-title{
+      display:flex;
+      gap:8px;
+      align-items:baseline;
+      flex-wrap:wrap;
+    }
+    .t-title b{font-size:14px;}
+    .pill{
+      border:1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .t-controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .timer{
+      font-variant-numeric: tabular-nums;
+      min-width: 72px;
+      text-align:right;
+      font-weight:700;
+    }
+    .mini{
+      padding:7px 9px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    .split{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .split > *{flex:1 1 220px;}
+    .stat{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    [data-theme="light"] .stat{background: rgba(0,0,0,.02);}
+    .stat strong{font-variant-numeric: tabular-nums;}
+    .small{font-size:12px;color:var(--muted)}
+    .divider{height:1px;background:var(--border);margin:12px 0;}
+    .lock-screen{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+    }
+    .lock-box{
+      width: min(420px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .lock-box h2{margin:0 0 8px;font-size:18px}
+    .lock-box .muted{margin-bottom: 10px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Задачи + Таймеры</h1>
+        <div class="sub">Твой личный штаб по борьбе с хаосом. Спойлер: хаос сопротивляется.</div>
+      </div>
+      <div class="top-actions">
+        <button class="btn" id="themeBtn" title="Переключить тему">🌗 Тема</button>
+        <button class="btn" id="exportBtn" title="Скачать CSV">📤 Экспорт</button>
+        <button class="btn danger" id="clearDoneBtn" title="Удалить выполненные">🧹 Удалить выполненные</button>
+        <button class="btn" id="lockBtn" title="PIN-замок">🔒 PIN</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div class="row">
+          <input class="grow" id="taskText" type="text" placeholder="Новая задача (да, одна. по очереди.)" />
+          <input id="taskLimit" type="number" min="0" step="1" placeholder="Лимит (мин)" title="Лимит времени в минутах (0 = без лимита)" />
+          <button class="btn accent" id="addBtn">Добавить</button>
+        </div>
+        <div class="muted" style="margin-top:8px;">
+          Лимит в минутах опционален. Когда таймер дойдет до лимита, будет сигнал и задача подсветится.
+        </div>
+
+        <div class="tasks" id="tasks"></div>
+
+        <div class="divider"></div>
+        <div class="row">
+          <div class="muted">Помодоро для выбранной задачи:</div>
+          <select class="btn mini" id="pomPreset" style="background:transparent;">
+            <option value="25,5">25 / 5</option>
+            <option value="50,10">50 / 10</option>
+            <option value="15,3">15 / 3</option>
+          </select>
+          <button class="btn ok" id="pomStartBtn">🍅 Старт</button>
+          <button class="btn" id="pomStopBtn">⛔ Стоп</button>
+          <span class="pill" id="pomStatus">не активен</span>
+        </div>
+        <div class="small" style="margin-top:8px;">
+          Выбери задачу кнопкой “⭐ Фокус” в карточке задачи. Помодоро будет тикать только на неё.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0;font-size:16px;">Статистика</h2>
+        <div class="muted">Потому что людям мало страдать, они хотят цифры.</div>
+        <div style="margin-top:10px" class="split">
+          <div class="stat">
+            <span>Сегодня всего</span>
+            <strong id="statToday">00:00:00</strong>
+          </div>
+          <div class="stat">
+            <span>Активных таймеров</span>
+            <strong id="statRunning">0</strong>
+          </div>
+          <div class="stat">
+            <span>Задач</span>
+            <strong id="statCount">0</strong>
+          </div>
+          <div class="stat">
+            <span>Выполнено</span>
+            <strong id="statDone">0</strong>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3 style="margin:0 0 8px;font-size:15px;">Режим PIN</h3>
+        <div class="muted">Если вдруг кто-то решит полистать твои планы на жизнь.</div>
+        <div class="row" style="margin-top:10px;">
+          <input id="pinNew" type="password" placeholder="Новый PIN (4-12 символов)" />
+          <button class="btn" id="pinSetBtn">Установить</button>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="btn danger" id="pinRemoveBtn">Снять PIN</button>
+          <span class="pill" id="pinState">PIN: нет</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3 style="margin:0 0 8px;font-size:15px;">День</h3>
+        <div class="muted">Статистика считается по дате. В полночь начнется новый “сегодня”.</div>
+        <div class="row" style="margin-top:10px;">
+          <span class="pill" id="todayKey"></span>
+          <button class="btn" id="resetTodayBtn" title="Сбросить сегодняшнюю статистику (не задачи)">♻ Сброс “сегодня”</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lock Screen -->
+  <div class="lock-screen" id="lockScreen">
+    <div class="lock-box">
+      <h2>🔒 Введите PIN</h2>
+      <div class="muted">Да, это локально. Нет, я не отправляю твой PIN в космос.</div>
+      <div class="row">
+        <input id="pinEnter" type="password" placeholder="PIN" />
+        <button class="btn accent" id="pinUnlockBtn">Открыть</button>
+      </div>
+      <div class="small" id="lockMsg" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // -------- Storage keys --------
+  const KEY = "todo_timer_v2";
+  const THEME_KEY = "todo_theme";
+  const PIN_KEY = "todo_pin";
+  const LOCKED_KEY = "todo_locked";
+
+  // -------- State --------
+  let state = load() || {
+    tasks: [],
+    focusTaskId: null,
+    todayKey: getTodayKey(),
+    todaySeconds: 0, // aggregate total for today (all running timers)
+    pomodoro: { active:false, phase:"work", remaining:0, workMin:25, breakMin:5 }
+  };
+
+  // If date changed, reset today's stats (but keep tasks)
+  if (state.todayKey !== getTodayKey()) {
+    state.todayKey = getTodayKey();
+    state.todaySeconds = 0;
+    state.pomodoro.active = false;
+    state.pomodoro.remaining = 0;
+    state.pomodoro.phase = "work";
+    save();
+  }
+
+  // -------- Elements --------
+  const el = (id) => document.getElementById(id);
+  const tasksEl = el("tasks");
+  const taskTextEl = el("taskText");
+  const taskLimitEl = el("taskLimit");
+  const addBtn = el("addBtn");
+  const themeBtn = el("themeBtn");
+  const exportBtn = el("exportBtn");
+  const clearDoneBtn = el("clearDoneBtn");
+  const statToday = el("statToday");
+  const statRunning = el("statRunning");
+  const statCount = el("statCount");
+  const statDone = el("statDone");
+  const todayKeyEl = el("todayKey");
+  const resetTodayBtn = el("resetTodayBtn");
+
+  const pomPreset = el("pomPreset");
+  const pomStartBtn = el("pomStartBtn");
+  const pomStopBtn = el("pomStopBtn");
+  const pomStatus = el("pomStatus");
+
+  const lockBtn = el("lockBtn");
+  const lockScreen = el("lockScreen");
+  const pinEnter = el("pinEnter");
+  const pinUnlockBtn = el("pinUnlockBtn");
+  const lockMsg = el("lockMsg");
+
+  const pinNew = el("pinNew");
+  const pinSetBtn = el("pinSetBtn");
+  const pinRemoveBtn = el("pinRemoveBtn");
+  const pinState = el("pinState");
+
+  // -------- Theme init --------
+  const theme = localStorage.getItem(THEME_KEY) || "dark";
+  setTheme(theme);
+
+  // -------- Lock init --------
+  updatePinState();
+  maybeShowLock();
+
+  // -------- Wire events --------
+  addBtn.addEventListener("click", addTask);
+  taskTextEl.addEventListener("keydown", (e) => { if (e.key === "Enter") addTask(); });
+
+  themeBtn.addEventListener("click", () => {
+    const curr = document.documentElement.getAttribute("data-theme") || "dark";
+    setTheme(curr === "light" ? "dark" : "light");
+  });
+
+  exportBtn.addEventListener("click", exportCSV);
+  clearDoneBtn.addEventListener("click", clearDone);
+  resetTodayBtn.addEventListener("click", () => {
+    state.todayKey = getTodayKey();
+    state.todaySeconds = 0;
+    // Не трогаем задачи. Ты и так трогаешь себя мыслями достаточно.
+    save();
+    render();
+  });
+
+  pomStartBtn.addEventListener("click", startPomodoro);
+  pomStopBtn.addEventListener("click", stopPomodoro);
+
+  lockBtn.addEventListener("click", () => {
+    const hasPin = !!localStorage.getItem(PIN_KEY);
+    if (!hasPin) {
+      alert("Сначала установи PIN в правой панели. Иначе что я запираю, воздух?");
+      return;
+    }
+    localStorage.setItem(LOCKED_KEY, "1");
+    showLock();
+  });
+
+  pinSetBtn.addEventListener("click", () => {
+    const v = (pinNew.value || "").trim();
+    if (v.length < 4 || v.length > 12) {
+      alert("PIN должен быть 4–12 символов. Не надо драматургии в одном символе.");
+      return;
+    }
+    localStorage.setItem(PIN_KEY, v);
+    pinNew.value = "";
+    updatePinState();
+    alert("PIN установлен. Поздравляю, теперь даже ты сама будешь страдать от защиты.");
+  });
+
+  pinRemoveBtn.addEventListener("click", () => {
+    localStorage.removeItem(PIN_KEY);
+    localStorage.removeItem(LOCKED_KEY);
+    updatePinState();
+    hideLock();
+  });
+
+  pinUnlockBtn.addEventListener("click", unlock);
+  pinEnter.addEventListener("keydown", (e) => { if (e.key === "Enter") unlock(); });
+
+  function unlock() {
+    const stored = localStorage.getItem(PIN_KEY);
+    if (!stored) { hideLock(); return; }
+    if (pinEnter.value === stored) {
+      localStorage.removeItem(LOCKED_KEY);
+      pinEnter.value = "";
+      lockMsg.textContent = "";
+      hideLock();
+    } else {
+      lockMsg.textContent = "Неверный PIN. Попробуй еще раз. Или вспомни, что ты его сама ставила.";
+    }
+  }
+
+  // -------- Timer tick (every second) --------
+  // 1) Task timers
+  // 2) Today total
+  // 3) Pomodoro (if active)
+  setInterval(() => {
+    if (isLocked()) return; // пока закрыто, ничего не тикает
+
+    let anyRunning = false;
+
+    for (const t of state.tasks) {
+      if (t.running) {
+        anyRunning = true;
+        t.timeSec += 1;
+
+        // Alert on limit reached
+        if (t.limitMin > 0 && !t.limitReached && t.timeSec >= t.limitMin * 60) {
+          t.limitReached = true;
+          beep();
+        }
+      }
+    }
+
+    if (anyRunning) {
+      state.todaySeconds += 1;
+    }
+
+    // Pomodoro tick (ticks independently; also can auto-start/pause task timer)
+    if (state.pomodoro.active) {
+      state.pomodoro.remaining -= 1;
+      if (state.pomodoro.remaining <= 0) {
+        beep();
+
+        if (state.pomodoro.phase === "work") {
+          state.pomodoro.phase = "break";
+          state.pomodoro.remaining = state.pomodoro.breakMin * 60;
+          pomStatus.textContent = `перерыв ${state.pomodoro.breakMin}м`;
+          // Pause focused task timer during break
+          setFocusRunning(false);
+        } else {
+          state.pomodoro.phase = "work";
+          state.pomodoro.remaining = state.pomodoro.workMin * 60;
+          pomStatus.textContent = `работа ${state.pomodoro.workMin}м`;
+          // Resume focused task timer during work
+          setFocusRunning(true);
+        }
+      } else {
+        // keep status updated
+        const mmss = formatMMSS(state.pomodoro.remaining);
+        pomStatus.textContent = `${state.pomodoro.phase === "work" ? "работа" : "перерыв"} ${mmss}`;
+      }
+    }
+
+    save();
+    renderStatsOnly();
+    renderTasksLight(); // без полной перерисовки всей страницы
+  }, 1000);
+
+  // -------- Functions --------
+  function addTask() {
+    if (isLocked()) return;
+
+    const text = (taskTextEl.value || "").trim();
+    if (!text) return;
+
+    const limitMin = Math.max(0, parseInt(taskLimitEl.value || "0", 10) || 0);
+
+    state.tasks.unshift({
+      id: cryptoRandomId(),
+      text,
+      done: false,
+      timeSec: 0,
+      running: false,
+      limitMin,
+      limitReached: false,
+      createdAt: Date.now()
+    });
+
+    taskTextEl.value = "";
+    taskLimitEl.value = "";
+    save();
+    render();
+  }
+
+  function toggleDone(id) {
+    const t = findTask(id);
+    if (!t) return;
+    t.done = !t.done;
+    // если завершили, автоматически ставим таймер на паузу
+    if (t.done) t.running = false;
+    save();
+    render();
+  }
+
+  function toggleRunning(id) {
+    const t = findTask(id);
+    if (!t) return;
+    if (t.done) return;
+    t.running = !t.running;
+    save();
+    render();
+  }
+
+  function resetTimer(id) {
+    const t = findTask(id);
+    if (!t) return;
+    t.timeSec = 0;
+    t.limitReached = false;
+    save();
+    render();
+  }
+
+  function removeTask(id) {
+    state.tasks = state.tasks.filter(x => x.id !== id);
+    if (state.focusTaskId === id) {
+      state.focusTaskId = null;
+      stopPomodoro();
+    }
+    save();
+    render();
+  }
+
+  function setFocus(id) {
+    state.focusTaskId = (state.focusTaskId === id) ? null : id;
+    // если включен помодоро, подстраиваем режим: работа = таймер фокуса бежит, перерыв = стоит
+    if (state.pomodoro.active) {
+      if (state.pomodoro.phase === "work") setFocusRunning(true);
+      else setFocusRunning(false);
+    }
+    save();
+    render();
+  }
+
+  function setFocusRunning(shouldRun) {
+    if (!state.focusTaskId) return;
+    const t = findTask(state.focusTaskId);
+    if (!t || t.done) return;
+    t.running = !!shouldRun;
+  }
+
+  function startPomodoro() {
+    if (isLocked()) return;
+
+    if (!state.focusTaskId) {
+      alert("Выбери задачу кнопкой ⭐ Фокус. Помодоро без фокуса это просто тревожный таймер.");
+      return;
+    }
+
+    const [w, b] = (pomPreset.value || "25,5").split(",").map(n => parseInt(n,10));
+    state.pomodoro.workMin = w || 25;
+    state.pomodoro.breakMin = b || 5;
+    state.pomodoro.active = true;
+    state.pomodoro.phase = "work";
+    state.pomodoro.remaining = state.pomodoro.workMin * 60;
+
+    pomStatus.textContent = `работа ${formatMMSS(state.pomodoro.remaining)}`;
+    setFocusRunning(true);
+
+    save();
+    render();
+  }
+
+  function stopPomodoro() {
+    state.pomodoro.active = false;
+    state.pomodoro.remaining = 0;
+    state.pomodoro.phase = "work";
+    pomStatus.textContent = "не активен";
+    // не трогаем running задач, чтобы ты не орала, что я "сломал"
+    save();
+    render();
+  }
+
+  function clearDone() {
+    state.tasks = state.tasks.filter(t => !t.done);
+    save();
+    render();
+  }
+
+  function exportCSV() {
+    const rows = [
+      ["text","done","time_hms","time_seconds","limit_minutes","limit_reached","created_at"].join(",")
+    ];
+    for (const t of state.tasks) {
+      rows.push([
+        csvEscape(t.text),
+        t.done ? "1" : "0",
+        formatHMS(t.timeSec),
+        String(t.timeSec),
+        String(t.limitMin || 0),
+        t.limitReached ? "1" : "0",
+        new Date(t.createdAt).toISOString()
+      ].join(","));
+    }
+    const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tasks_${getTodayKey()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function render() {
+    todayKeyEl.textContent = `Сегодня: ${state.todayKey}`;
+    renderTasksFull();
+    renderStatsOnly();
+    updatePinState();
+    renderPomStatus();
+  }
+
+  function renderPomStatus() {
+    if (!state.pomodoro.active) {
+      pomStatus.textContent = "не активен";
+      return;
+    }
+    pomStatus.textContent = `${state.pomodoro.phase === "work" ? "работа" : "перерыв"} ${formatMMSS(state.pomodoro.remaining)}`;
+  }
+
+  function renderTasksFull() {
+    tasksEl.innerHTML = "";
+    if (state.tasks.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "muted";
+      empty.style.padding = "10px 2px";
+      empty.textContent = "Пока пусто. Это либо дисциплина, либо ты еще не начала. Я ставлю на второе.";
+      tasksEl.appendChild(empty);
+      return;
+    }
+
+    for (const t of state.tasks) {
+      const div = document.createElement("div");
+      div.className = "task" + (t.done ? " done" : "");
+      div.dataset.id = t.id;
+
+      const check = document.createElement("div");
+      check.className = "check";
+      check.textContent = t.done ? "✓" : "";
+      check.title = "Выполнено / не выполнено";
+      check.addEventListener("click", () => toggleDone(t.id));
+
+      const mid = document.createElement("div");
+
+      const title = document.createElement("div");
+      title.className = "t-title";
+
+      const b = document.createElement("b");
+      b.textContent = t.text;
+
+      const pill = document.createElement("span");
+      pill.className = "pill";
+      pill.textContent =
+        (t.limitMin > 0)
+          ? (t.limitReached ? `лимит достигнут (${t.limitMin}м)` : `лимит: ${t.limitMin}м`)
+          : "без лимита";
+
+      const focus = document.createElement("span");
+      focus.className = "pill";
+      focus.style.cursor = "pointer";
+      focus.style.borderColor = state.focusTaskId === t.id ? "var(--accent)" : "var(--border)";
+      focus.style.color = state.focusTaskId === t.id ? "var(--accent)" : "var(--muted)";
+      focus.textContent = state.focusTaskId === t.id ? "⭐ фокус" : "☆ фокус";
+      focus.title = "Сделать задачей фокуса (для Помодоро)";
+      focus.addEventListener("click", () => setFocus(t.id));
+
+      title.append(b, pill, focus);
+
+      const meta = document.createElement("div");
+      meta.className = "small";
+      const runningText = t.running ? "идет" : "стоит";
+      meta.textContent = `Таймер: ${runningText}` + (t.limitReached ? " • сигнал был" : "");
+
+      mid.append(title, meta);
+
+      const right = document.createElement("div");
+      right.className = "t-controls";
+
+      const timer = document.createElement("span");
+      timer.className = "timer";
+      timer.textContent = formatHMS(t.timeSec);
+      timer.title = "Натикало времени";
+
+      const play = document.createElement("button");
+      play.className = "btn mini " + (t.running ? "warn" : "ok");
+      play.textContent = t.running ? "⏸ Пауза" : "▶ Старт";
+      play.disabled = t.done;
+      play.addEventListener("click", () => toggleRunning(t.id));
+
+      const reset = document.createElement("button");
+      reset.className = "btn mini";
+      reset.textContent = "↺ 0";
+      reset.title = "Сбросить таймер";
+      reset.addEventListener("click", () => resetTimer(t.id));
+
+      const del = document.createElement("button");
+      del.className = "btn mini danger";
+      del.textContent = "🗑";
+      del.title = "Удалить задачу";
+      del.addEventListener("click", () => removeTask(t.id));
+
+      right.append(timer, play, reset, del);
+
+      // limit reached highlight
+      if (t.limitReached && !t.done) {
+        div.style.borderColor = "var(--warn)";
+      }
+
+      div.append(check, mid, right);
+      tasksEl.appendChild(div);
+    }
+  }
+
+  // lightweight update: update timers text & running button labels without rebuilding DOM
+  function renderTasksLight() {
+    const nodes = tasksEl.querySelectorAll(".task");
+    if (!nodes || nodes.length === 0) return;
+
+    for (const node of nodes) {
+      const id = node.dataset.id;
+      const t = findTask(id);
+      if (!t) continue;
+
+      const timer = node.querySelector(".timer");
+      if (timer) timer.textContent = formatHMS(t.timeSec);
+
+      const buttons = node.querySelectorAll("button");
+      // play button is 2nd in controls: [play, reset, del] but safer to find by text match
+      for (const btn of buttons) {
+        if (btn.textContent.includes("Старт") || btn.textContent.includes("Пауза")) {
+          btn.textContent = t.running ? "⏸ Пауза" : "▶ Старт";
+          btn.className = "btn mini " + (t.running ? "warn" : "ok");
+          btn.disabled = t.done;
+        }
+      }
+
+      if (t.limitReached && !t.done) node.style.borderColor = "var(--warn)";
+      else node.style.borderColor = "var(--border)";
+    }
+  }
+
+  function renderStatsOnly() {
+    statToday.textContent = formatHMS(state.todaySeconds);
+
+    const running = state.tasks.reduce((acc,t) => acc + (t.running ? 1 : 0), 0);
+    statRunning.textContent = String(running);
+
+    statCount.textContent = String(state.tasks.length);
+    statDone.textContent = String(state.tasks.filter(t => t.done).length);
+
+    todayKeyEl.textContent = `Сегодня: ${state.todayKey}`;
+  }
+
+  function findTask(id) {
+    return state.tasks.find(t => t.id === id) || null;
+  }
+
+  function save() {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY) || ""); }
+    catch { return null; }
+  }
+
+  function setTheme(t) {
+    document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
+    localStorage.setItem(THEME_KEY, t === "light" ? "light" : "dark");
+  }
+
+  function getTodayKey() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function formatMMSS(sec) {
+    sec = Math.max(0, sec|0);
+    const m = Math.floor(sec/60);
+    const s = sec%60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+  function formatHMS(sec) {
+    sec = Math.max(0, sec|0);
+    const h = Math.floor(sec/3600);
+    const m = Math.floor((sec%3600)/60);
+    const s = sec%60;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+  function csvEscape(s) {
+    const str = String(s ?? "");
+    if (/[",\n]/.test(str)) return `"${str.replaceAll('"','""')}"`;
+    return str;
+  }
+
+  function cryptoRandomId() {
+    // decent-enough local id
+    const a = new Uint32Array(2);
+    crypto.getRandomValues(a);
+    return `${a[0].toString(16)}${a[1].toString(16)}`;
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 880;
+      g.gain.value = 0.06;
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      setTimeout(() => { o.stop(); ctx.close(); }, 180);
+    } catch (e) {
+      // if audio blocked, silently fail (humans love restrictions)
+    }
+  }
+
+  // -------- PIN / Lock helpers --------
+  function updatePinState() {
+    const hasPin = !!localStorage.getItem(PIN_KEY);
+    pinState.textContent = hasPin ? "PIN: установлен" : "PIN: нет";
+  }
+  function isLocked() {
+    return localStorage.getItem(LOCKED_KEY) === "1" && !!localStorage.getItem(PIN_KEY);
+  }
+  function maybeShowLock() {
+    if (isLocked()) showLock();
+  }
+  function showLock() {
+    lockScreen.style.display = "flex";
+    pinEnter.focus();
+  }
+  function hideLock() {
+    lockScreen.style.display = "none";
+  }
+
+  // -------- Init render --------
+  render();
+
+})();
+</script>
+</body>
+</html>
